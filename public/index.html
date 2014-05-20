@@ -190,6 +190,10 @@
                                 $('.data').fadeIn(300);
                             }
                         });
+                    }, function() {
+                        $('#weather').removeClass('csspinner');
+                        $('#error').text('Sorry, there was an problem retrieving your location.');
+                        $('.error').fadeIn(300);
                     });
                 } else {
                     $('#weather').removeClass('csspinner');
