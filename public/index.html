@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Weather</title>
+        <style type="text/css">
+
+        </style>
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+    </head>
+    <body>
+        <script type="text/javascript">
+            (function() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(pos) {
+                        var lat = pos.coords.latitude;
+                        var lon = pos.coords.longitude;
+                        var uri = 'http://api.openweathermap.org/data/2.5/weather'
+                            + '?lat=' + lat
+                            + '&lon=' + lon
+                            + '&mode=json';
+
+                        $.getJSON(uri, function(weather) {
+                            if (weather.cod === '404' || weather.id === undefined) {
+                                $('#weather').text('Sorry, weather is not available for your location.');
+                            } else {
+                                var temp = Math.round((weather.main.temp - 273.15) * 9 / 5 + 32);
+                                $('#weather').text(temp + 'ºF');
+                            }
+                        });
+                    });
+                } else {
+                    $('#weather').text('Sorry, your browser does not support geolocation.');
+                }
+            })();
+        </script>
+
+        <div id="weather">
+            Fetching data&hellip;
+        </div>
+
+    </body>
+</html>
