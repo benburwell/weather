@@ -26,6 +26,14 @@
                 height: 100%;
             }
 
+            h1 {
+                font-size: 2em;
+            }
+
+            p {
+                font-size: 1em;
+            }
+
             #weather {
                 width: 15em;
                 height: 15em;
@@ -36,6 +44,7 @@
                 text-align: center;
                 padding: 1em;
                 background-color: rgba(30, 30, 30, 0.3);
+                vertical-align: middle;
             }
 
             #temp {
@@ -48,6 +57,10 @@
             }
 
             .data {
+                display: none;
+            }
+
+            .error {
                 display: none;
             }
 
@@ -122,15 +135,14 @@
     </head>
     <body>
         <script type="text/javascript">
-            (function() {
+            $(document).ready(function() {
 
                 // pick random background
                 var bg = Math.round(Math.random() * 6);
                 var bg_uri = 'http://sleepy-wildwood-9417.herokuapp.com/background/' + bg + '.jpg';
                 $('html').css('background-image', 'url(' + bg_uri + ')')
 
-
-                if (navigator.geolocation !== undefined) {
+                if (navigator.geolocation) {
 
                     navigator.geolocation.getCurrentPosition(function(pos) {
 
@@ -142,9 +154,12 @@
                             + '&mode=json';
 
                         $.getJSON(uri, function(weather) {
+
                             $('#weather').removeClass('csspinner');
+
                             if (weather.cod === '404' || weather.id === undefined) {
-                                $('#weather').text('Sorry, weather is not available for your location.');
+                                $('#error').text('Sorry, weather is not available for your location.');
+                                $('.error').fadeIn(300);
                             } else {
 
                                 var temp = Math.round((weather.main.temp - 273.15) * 9 / 5 + 32) + 'º';
@@ -159,24 +174,30 @@
                                 $('#pressure').text(pressure);
                                 $('#description').text(description);
 
-                                $('.data').fadeIn(200);
+                                $('.data').fadeIn(300);
                             }
                         });
                     });
                 } else {
-                    $('#weather').text('Sorry, your browser does not support geolocation.');
+                    $('#weather').removeClass('csspinner');
+                    $('#error').text('Sorry, your browser does not support geolocation.');
+                    $('.error').fadeIn(300);
                 }
-            })();
+            });
         </script>
 
         <div id="weather" class="csspinner">
-            <div id="temp" class="data"></div>
-            <div id="description" class="data"></div>
-            <div class="data">
+            <div class="error">
+                <h1>Error</h1>
+                <p id="error"></p>
+            </div>
+            <p id="temp" class="data"></p>
+            <p id="description" class="data"></p>
+            <p class="data">
                 <span id="humidity" class="data"></span> &bull;
                 <span id="wind" class="data"></span> &bull;
                 <span id="pressure" class="data"></span>
-            </div>
+            </p>
         </div>
 
     </body>
