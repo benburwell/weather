@@ -3,15 +3,126 @@
     <head>
         <title>Weather</title>
         <style type="text/css">
+            * {
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                background-image: url(http://weather.benburwell.com/background/5.jpg);
+                background-repeat: no-repeat;
+                background-size: cover;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                font-family: "brandon-grotesque", sans-serif;
+                font-weight: 100;
+                font-size: 20px;
+            }
+
+            #weather {
+                width: 15em;
+                height: 15em;
+                margin-left: auto;
+                margin-right: auto;
+                margin-top: 50px;
+                color: #fff;
+                text-align: center;
+                padding: 1em;
+                background-color: rgba(30, 30, 30, 0.3);
+            }
+
+            #temp {
+                font-size: 5em;
+            }
+
+            #description {
+                font-size: 2em;
+                padding-bottom: 0.5em;
+            }
+
+            .data {
+                display: none;
+            }
+
+            .csspinner {
+                position: relative;
+            }
+
+            .csspinner:after {
+                z-index: 2;
+                content: "";
+                height: 40px;
+                width: 40px;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                margin: -20px 0 0 -20px;
+                -webkit-transition: all .85s ease 0s;
+                transition: all .85s ease 0s;
+                border-radius: 100%;
+                -webkit-animation: standard .85s infinite linear;
+                animation: standard .85s infinite linear;
+                -webkit-transform-origin: center;
+                -ms-transform-origin: center;
+                transform-origin: center;
+                border-right: 4px solid transparent;
+                border-top: 4px solid transparent;
+                border-left: 4px solid transparent;
+                border-bottom: 4px solid #fff;
+            }
+
+            @-webkit-keyframes standard {
+                from {
+                    -webkit-transform: rotate(0deg);
+                    transform: rotate(0deg);
+                }
+
+                to {
+                    -webkit-transform: rotate(360deg);
+                    transform: rotate(360deg);
+                }
+            }
+
+            @keyframes standard {
+                from {
+                    -webkit-transform: rotate(0deg);
+                    transform: rotate(0deg);
+                }
+
+                to {
+                    -webkit-transform: rotate(360deg);
+                    transform: rotate(360deg);
+                }
+            }
+
+            @media only screen and (max-width: 480px) {
+                #weather {
+                    margin: 0;
+                    width: 100%;
+                    height: 100%;
+                    padding: 0;
+                }
+            }
 
         </style>
         <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script type="text/javascript" src="//use.typekit.net/kzg7xdj.js"></script>
+        <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <meta name="apple-touch-icon" href="/icon/touch-icon.png">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     </head>
     <body>
         <script type="text/javascript">
             (function() {
-                if (navigator.geolocation) {
+                if (navigator.geolocation !== undefined) {
+
                     navigator.geolocation.getCurrentPosition(function(pos) {
+
                         var lat = pos.coords.latitude;
                         var lon = pos.coords.longitude;
                         var uri = 'http://api.openweathermap.org/data/2.5/weather'
@@ -20,11 +131,24 @@
                             + '&mode=json';
 
                         $.getJSON(uri, function(weather) {
+                            $('#weather').removeClass('csspinner');
                             if (weather.cod === '404' || weather.id === undefined) {
                                 $('#weather').text('Sorry, weather is not available for your location.');
                             } else {
-                                var temp = Math.round((weather.main.temp - 273.15) * 9 / 5 + 32);
-                                $('#weather').text(temp + 'ºF');
+
+                                var temp = Math.round((weather.main.temp - 273.15) * 9 / 5 + 32) + 'º';
+                                var humidity = Math.round(weather.main.humidity) + '%';
+                                var wind = Math.round(weather.wind.speed) + ' mph';
+                                var pressure = Math.round(weather.main.pressure) + ' hPa';
+                                var description = weather.weather[0].main;
+
+                                $('#temp').text(temp);
+                                $('#humidity').text(humidity);
+                                $('#wind').text(wind);
+                                $('#pressure').text(pressure);
+                                $('#description').text(description);
+
+                                $('.data').fadeIn(200);
                             }
                         });
                     });
@@ -34,8 +158,14 @@
             })();
         </script>
 
-        <div id="weather">
-            Fetching data&hellip;
+        <div id="weather" class="csspinner">
+            <div id="temp" class="data"></div>
+            <div id="description" class="data"></div>
+            <div class="data">
+                <span id="humidity" class="data"></span> &bull;
+                <span id="wind" class="data"></span> &bull;
+                <span id="pressure" class="data"></span>
+            </div>
         </div>
 
     </body>
