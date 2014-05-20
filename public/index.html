@@ -9,7 +9,6 @@
             }
 
             html {
-                background-image: url(http://sleepy-wildwood-9417.herokuapp.com/background/5.jpg);
                 background-repeat: no-repeat;
                 background-size: cover;
                 position: absolute;
@@ -124,6 +123,13 @@
     <body>
         <script type="text/javascript">
             (function() {
+
+                // pick random background
+                var bg = Math.round(Math.random() * 6);
+                var bg_uri = 'http://sleepy-wildwood-9417.herokuapp.com/background/' + bg + '.jpg';
+                $('html').css('background-image', 'url(' + bg_uri + ')')
+
+
                 if (navigator.geolocation !== undefined) {
 
                     navigator.geolocation.getCurrentPosition(function(pos) {
