@@ -6,25 +6,28 @@
             * {
                 margin: 0;
                 padding: 0;
+                cursor: default;
+            }
+
+            *::selection {
+                background: transparent;
+            }
+
+            *::-moz-selection {
+                background: transparent;
             }
 
             html {
+                background-color: #000;
+                background-image: url(http://weather.benburwell.com/background/1.jpg);
                 background-repeat: no-repeat;
                 background-size: cover;
-                position: absolute;
                 background-position: center;
-                top: 0;
-                left: 0;
                 width: 100%;
                 height: 100%;
                 font-family: "brandon-grotesque", sans-serif;
                 font-weight: 100;
-                font-size: 22px;
-            }
-
-            body {
-                width: 100%;
-                height: 100%;
+                font-size: 24px;
             }
 
             h1 {
@@ -44,7 +47,7 @@
                 color: #fff;
                 text-align: center;
                 padding: 1em;
-                background-color: rgba(30, 30, 30, 0.3);
+                background-color: rgba(0, 0, 0, 0.7);
             }
 
             #temp {
@@ -62,6 +65,10 @@
 
             .error {
                 display: none;
+            }
+
+            .error h1 {
+                color: #955;
             }
 
             .csspinner {
@@ -120,6 +127,7 @@
                     margin: 0;
                     width: 100%;
                     height: 100%;
+                    position: absolute;
                     padding: 0;
                     padding-top: 3em;
                 }
@@ -141,72 +149,75 @@
     </head>
     <body>
         <script type="text/javascript">
-            $(document).ready(function() {
 
-                // pick random background
-                var bg = Math.round(Math.random() * 4);
-                var bg_uri = 'http://sleepy-wildwood-9417.herokuapp.com/background/' + bg + '.jpg';
-                $('html').css('background-image', 'url(' + bg_uri + ')')
+            var FADE_TIME = 500;
 
-                if (navigator.geolocation) {
+            // Takes a position object and updates the display based on the
+            // coordinates provided.
+            var update_weather = function(pos) {
+                var lat = pos.coords.latitude;
+                var lon = pos.coords.longitude;
+                var uri = 'http://api.openweathermap.org/data/2.5/weather'
+                    + '?lat=' + lat
+                    + '&lon=' + lon
+                    + '&mode=json';
 
-                    navigator.geolocation.getCurrentPosition(function(pos) {
+                $.getJSON(uri, function(weather) {
 
-                        var lat = pos.coords.latitude;
-                        var lon = pos.coords.longitude;
-                        var uri = 'http://api.openweathermap.org/data/2.5/weather'
-                            + '?lat=' + lat
-                            + '&lon=' + lon
-                            + '&mode=json';
-
-                        $.getJSON(uri, function(weather) {
-
-                            $('#weather').removeClass('csspinner');
-
-                            if (weather.cod === '404' || weather.id === undefined) {
-                                $('#error').text('Sorry, weather is not available for your location.');
-                                $('.error').fadeIn(300);
-                            } else {
-
-                                var temp = Math.round((weather.main.temp - 273.15) * 9 / 5 + 32) + 'º';
-                                var humidity = Math.round(weather.main.humidity) + '%';
-                                var wind = Math.round(weather.wind.speed) + ' mph';
-                                var pressure = Math.round(weather.main.pressure) + ' hPa';
-                                var description = weather.weather[0].main;
-
-                                $('#temp').text(temp);
-                                $('#humidity').text(humidity);
-                                $('#wind').text(wind);
-                                $('#pressure').text(pressure);
-                                $('#description').text(description);
-
-                                $('.data').fadeIn(300);
-                            }
-                        });
-                    }, function() {
-                        $('#weather').removeClass('csspinner');
-                        $('#error').text('Sorry, there was an problem retrieving your location.');
-                        $('.error').fadeIn(300);
-                    });
-                } else {
                     $('#weather').removeClass('csspinner');
-                    $('#error').text('Sorry, your browser does not support geolocation.');
-                    $('.error').fadeIn(300);
+
+                    if (weather.cod === '404' || weather.id === undefined) {
+                        show_error('Weather is not available for your location.');
+                    } else {
+
+                        var temp = Math.round((weather.main.temp - 273.15) * 9 / 5 + 32) + 'º';
+                        var humidity = Math.round(weather.main.humidity) + '%';
+                        var wind = Math.round(weather.wind.speed) + ' mph';
+                        var pressure = Math.round(weather.main.pressure) + ' mbar';
+                        var description = weather.weather[0].main;
+
+                        $('#temp').text(temp);
+                        $('#humidity').text(humidity);
+                        $('#wind').text(wind);
+                        $('#pressure').text(pressure);
+                        $('#description').text(description);
+
+                        $('.data').fadeIn(FADE_TIME);
+                    }
+                });
+            };
+
+            // Updates the display to show an error.
+            var show_error = function(msg) {
+                    $('.data').hide();
+                    $('#weather').removeClass('csspinner');
+                    $('#error').text(msg || 'There was a problem.');
+                    $('.error').fadeIn(FADE_TIME);
+            };
+
+            $(document).ready(function() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        update_weather,
+                        function() { show_error('There was a problem retrieving your location.'); }
+                    );
+                } else {
+                    show_error('Your browser does not support geolocation.');
                 }
             });
         </script>
 
         <div id="weather" class="csspinner">
             <div class="error">
-                <h1>Error</h1>
+                <h1>Sorry</h1>
                 <p id="error"></p>
             </div>
             <p id="temp" class="data"></p>
             <p id="description" class="data"></p>
             <p class="data">
-                <span id="humidity" class="data"></span> &bull;
-                <span id="wind" class="data"></span> &bull;
-                <span id="pressure" class="data"></span>
+                <span title="Humidity" id="humidity" class="data"></span> &bull;
+                <span title="Wind Speed" id="wind" class="data"></span> &bull;
+                <span title="Pressure" id="pressure" class="data"></span>
             </p>
         </div>
 
